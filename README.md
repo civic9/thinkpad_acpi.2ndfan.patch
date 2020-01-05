@@ -4,7 +4,7 @@ Patch for vanilla Linux kernel 5.4.7 to enable 2nd fan control via sysfs.
 
 Based on patches found in discussion: https://github.com/vmatare/thinkfan/issues/58
 
-2nd fan control is enabled for machines which Bios Version begins with N2E, eg. Thinkpad X1 Extreme (1st GEN). You can add other prefixes in fan\_quirk\_table. 
+2nd fan control is enabled for machines which Bios Version begins with N2E (Thinkpad X1 Extreme 1st gen) or N2O (Thinkpad X1 Extreme 2nd gen). You can add other prefixes in fan\_quirk\_table. 
 
 Patch in the file thinkpad\_acpi.2ndfan.patch. 
 
