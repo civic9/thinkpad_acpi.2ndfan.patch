@@ -1,6 +1,6 @@
 diff -ru orig/thinkpad_acpi.c new/thinkpad_acpi.c
 --- orig/thinkpad_acpi.c	2019-12-31 16:46:36.000000000 +0100
-+++ new/thinkpad_acpi.c	2020-01-04 21:05:38.063640657 +0100
++++ new/thinkpad_acpi.c	2020-01-05 04:31:25.620063882 +0100
 @@ -318,6 +318,7 @@
  	u32 uwb:1;
  	u32 fan_ctrl_status_undef:1;
@@ -143,11 +143,12 @@ diff -ru orig/thinkpad_acpi.c new/thinkpad_acpi.c
  static const struct tpacpi_quirk fan_quirk_table[] __initconst = {
  	TPACPI_QEC_IBM('1', 'Y', TPACPI_FAN_Q1),
  	TPACPI_QEC_IBM('7', '8', TPACPI_FAN_Q1),
-@@ -8772,8 +8858,12 @@
+@@ -8772,8 +8858,13 @@
  	TPACPI_QEC_IBM('7', '0', TPACPI_FAN_Q1),
  	TPACPI_QEC_LNV('7', 'M', TPACPI_FAN_2FAN),
  	TPACPI_Q_LNV('N', '1', TPACPI_FAN_2FAN),
 +        TPACPI_Q_LNV3('N', '2', 'E', TPACPI_FAN_2FAN_CONTROL), /* X1 Extreme (1st gen) */
++        TPACPI_Q_LNV3('N', '2', 'O', TPACPI_FAN_2FAN_CONTROL), /* X1 Extreme (2nd gen) */
  };
  
 +#undef TPACPI_FAN_QL
@@ -156,7 +157,7 @@ diff -ru orig/thinkpad_acpi.c new/thinkpad_acpi.c
  static int __init fan_init(struct ibm_init_struct *iibm)
  {
  	int rc;
-@@ -8816,6 +8906,12 @@
+@@ -8816,6 +8907,12 @@
  				dbg_printk(TPACPI_DBG_INIT | TPACPI_DBG_FAN,
  					"secondary fan support enabled\n");
  			}
@@ -169,7 +170,7 @@ diff -ru orig/thinkpad_acpi.c new/thinkpad_acpi.c
  		} else {
  			pr_err("ThinkPad ACPI EC access misbehaving, fan status and control unavailable\n");
  			return 1;
-@@ -8869,6 +8965,13 @@
+@@ -8869,6 +8966,13 @@
  
  	if (fan_status_access_mode != TPACPI_FAN_NONE ||
  	    fan_control_access_mode != TPACPI_FAN_WR_NONE) {

@@ -8859,6 +8859,7 @@ static const struct tpacpi_quirk fan_quirk_table[] __initconst = {
 	TPACPI_QEC_LNV('7', 'M', TPACPI_FAN_2FAN),
 	TPACPI_Q_LNV('N', '1', TPACPI_FAN_2FAN),
         TPACPI_Q_LNV3('N', '2', 'E', TPACPI_FAN_2FAN_CONTROL), /* X1 Extreme (1st gen) */
+        TPACPI_Q_LNV3('N', '2', 'O', TPACPI_FAN_2FAN_CONTROL), /* X1 Extreme (2nd gen) */
 };
 
 #undef TPACPI_FAN_QL
