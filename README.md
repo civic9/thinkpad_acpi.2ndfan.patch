@@ -6,7 +6,7 @@ Based on patches found in discussion: https://github.com/vmatare/thinkfan/issues
 
 2nd fan control is enabled for machines which Bios Version begins with N2E, eg. Thinkpad X1 Extreme (1st GEN). You can add other prefixes in fan\_quirk\_table. 
 
-Patch in file thinkpad\_acpi.2ndfan.patch. 
+Patch in the file thinkpad\_acpi.2ndfan.patch. 
 
 build\_install.sh is a helper script for Arch Linux to download the kernel sources, patch it, make and install module. Don't use without inspecting it and understanding what it does. The script probably won't be working on another distro.
 
