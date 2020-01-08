@@ -1,6 +1,5 @@
-diff -ru orig/thinkpad_acpi.c new/thinkpad_acpi.c
---- orig/thinkpad_acpi.c	2019-12-31 16:46:36.000000000 +0100
-+++ new/thinkpad_acpi.c	2020-01-05 04:31:25.620063882 +0100
+--- a/drivers/platform/x86/thinkpad_acpi.c	2019-11-25 01:32:01.000000000 +0100
++++ b/drivers/platform/x86/thinkpad_acpi.c	2020-01-08 18:48:11.378493565 +0100
 @@ -318,6 +318,7 @@
  	u32 uwb:1;
  	u32 fan_ctrl_status_undef:1;
@@ -12,52 +11,51 @@ diff -ru orig/thinkpad_acpi.c new/thinkpad_acpi.c
 @@ -8107,6 +8108,8 @@
  static u8 fan_control_resume_level;
  static int fan_watchdog_maxinterval;
- 
+
 +static u8 fan_active_fan;
 +
  static struct mutex fan_mutex;
- 
+
  static void fan_watchdog_fire(struct work_struct *ignored);
 @@ -8192,6 +8195,14 @@
  	return true;
  }
- 
+
 +static void fan_select_fan(void)
 +{
-+       if (fan_active_fan == 1)
-+               fan_select_fan1();
-+       else
-+               fan_select_fan2();
++	if (fan_active_fan == 1)
++		fan_select_fan1();
++	else
++		fan_select_fan2();
 +}
 +
  /*
   * Call with fan_mutex held
   */
-@@ -8228,6 +8239,12 @@
+@@ -8228,6 +8239,11 @@
  	}
  	case TPACPI_FAN_RD_TPEC:
  		/* all except 570, 600e/x, 770e, 770x */
 +
-+                /* BUG: regardless of selected fan,
++		/* BUG: regardless of selected fan,
 +		 * always status of fan1 is returned
-+		*/ 
-+		fan_select_fan();				      
-+
++		 */
++		fan_select_fan();
  		if (unlikely(!acpi_ec_read(fan_status_offset, &s)))
  			return -EIO;
- 
-@@ -8346,6 +8363,7 @@
+
+@@ -8346,6 +8362,7 @@
  		else if (level & TP_EC_FAN_AUTO)
  			level |= 4;	/* safety min speed 4 */
- 
+
 +		fan_select_fan();
  		if (!acpi_ec_write(fan_status_offset, level))
  			return -EIO;
  		else
-@@ -8690,6 +8708,58 @@
- 
+@@ -8690,6 +8707,58 @@
+
  static DEVICE_ATTR(pwm1, S_IWUSR | S_IRUGO, fan_pwm1_show, fan_pwm1_store);
- 
+
 +static ssize_t fan_pwm2_enable_show(struct device *dev,
 +				    struct device_attribute *attr,
 +				    char *buf)
@@ -113,74 +111,58 @@ diff -ru orig/thinkpad_acpi.c new/thinkpad_acpi.c
  /* sysfs fan fan1_input ------------------------------------------------ */
  static ssize_t fan_fan1_input_show(struct device *dev,
  			   struct device_attribute *attr,
-@@ -8754,6 +8824,8 @@
+@@ -8754,6 +8823,8 @@
  static struct attribute *fan_attributes[] = {
  	&dev_attr_pwm1_enable.attr, &dev_attr_pwm1.attr,
  	&dev_attr_fan1_input.attr,
-+        NULL, /* for pwm2_enable*/
-+        NULL, /* for pwm2 */
++	NULL, /* for pwm2_enable*/
++	NULL, /* for pwm2 */
  	NULL, /* for fan2_input */
  	NULL
  };
-@@ -8765,6 +8837,20 @@
+@@ -8764,6 +8835,7 @@
+
  #define TPACPI_FAN_Q1	0x0001		/* Unitialized HFSP */
  #define TPACPI_FAN_2FAN	0x0002		/* EC 0x31 bit 0 selects fan2 */
- 
-+#define TPACPI_FAN_2FAN_CONTROL 0x0004  /* support to control fan2 */
-+
-+#define TPACPI_FAN_QI(__id1, __id2, __quirks)   \
-+        { .vendor = PCI_VENDOR_ID_IBM,          \
-+          .bios = TPACPI_MATCH_ANY,             \
-+          .ec = TPID(__id1, __id2),             \
-+          .quirks = __quirks }
-+
-+#define TPACPI_FAN_QL(__id1, __id2, __quirks)   \
-+        { .vendor = PCI_VENDOR_ID_LENOVO,       \
-+          .bios = TPACPI_MATCH_ANY,             \
-+          .ec = TPID(__id1, __id2),             \
-+          .quirks = __quirks }
-+
++#define TPACPI_FAN_2FAN_CONTROL	0x0004	/* support to control fan2 */
+
  static const struct tpacpi_quirk fan_quirk_table[] __initconst = {
  	TPACPI_QEC_IBM('1', 'Y', TPACPI_FAN_Q1),
- 	TPACPI_QEC_IBM('7', '8', TPACPI_FAN_Q1),
-@@ -8772,8 +8858,13 @@
+@@ -8771,7 +8843,9 @@
+ 	TPACPI_QEC_IBM('7', '6', TPACPI_FAN_Q1),
  	TPACPI_QEC_IBM('7', '0', TPACPI_FAN_Q1),
  	TPACPI_QEC_LNV('7', 'M', TPACPI_FAN_2FAN),
- 	TPACPI_Q_LNV('N', '1', TPACPI_FAN_2FAN),
-+        TPACPI_Q_LNV3('N', '2', 'E', TPACPI_FAN_2FAN_CONTROL), /* X1 Extreme (1st gen) */
-+        TPACPI_Q_LNV3('N', '2', 'O', TPACPI_FAN_2FAN_CONTROL), /* X1 Extreme (2nd gen) */
+-	TPACPI_Q_LNV('N', '1', TPACPI_FAN_2FAN),
++	TPACPI_Q_LNV3('N', '1', 'E', TPACPI_FAN_2FAN_CONTROL),	/* P50, P70 */
++	TPACPI_Q_LNV3('N', '2', 'E', TPACPI_FAN_2FAN_CONTROL),	/* X1 Extreme (1st gen) */
++	TPACPI_Q_LNV3('N', '2', 'O', TPACPI_FAN_2FAN_CONTROL),	/* X1 Extreme (2nd gen) */
  };
- 
-+#undef TPACPI_FAN_QL
-+#undef TPACPI_FAN_QI
-+
+
  static int __init fan_init(struct ibm_init_struct *iibm)
- {
- 	int rc;
-@@ -8816,6 +8907,12 @@
+@@ -8816,6 +8890,12 @@
  				dbg_printk(TPACPI_DBG_INIT | TPACPI_DBG_FAN,
  					"secondary fan support enabled\n");
  			}
-+                        if (quirks & TPACPI_FAN_2FAN_CONTROL) {
-+                                tp_features.second_fan = 1;
-+                                tp_features.second_fan_control = 1;
-+                                dbg_printk(TPACPI_DBG_INIT | TPACPI_DBG_FAN,
-+                                        "secondary fan write support enabled\n");
-+                        }
++			if (quirks & TPACPI_FAN_2FAN_CONTROL) {
++				tp_features.second_fan = 1;
++				tp_features.second_fan_control = 1;
++				dbg_printk(TPACPI_DBG_INIT | TPACPI_DBG_FAN,
++					"secondary fan write support enabled\n");
++			}
  		} else {
  			pr_err("ThinkPad ACPI EC access misbehaving, fan status and control unavailable\n");
  			return 1;
-@@ -8869,6 +8966,13 @@
- 
+@@ -8869,6 +8949,13 @@
+
  	if (fan_status_access_mode != TPACPI_FAN_NONE ||
  	    fan_control_access_mode != TPACPI_FAN_WR_NONE) {
-+                if (tp_features.second_fan_control) {
-+                        /* attach second fan pwm attributes */
-+                        fan_attributes[ARRAY_SIZE(fan_attributes)-4] =
-+                                        &dev_attr_pwm2_enable.attr;
-+                        fan_attributes[ARRAY_SIZE(fan_attributes)-3] =
-+                                        &dev_attr_pwm2.attr;
-+                }
++		if (tp_features.second_fan_control) {
++			/* attach second fan pwm attributes */
++			fan_attributes[ARRAY_SIZE(fan_attributes)-4] =
++					&dev_attr_pwm2_enable.attr;
++			fan_attributes[ARRAY_SIZE(fan_attributes)-3] =
++					&dev_attr_pwm2.attr;
++		}
  		if (tp_features.second_fan) {
  			/* attach second fan tachometer */
  			fan_attributes[ARRAY_SIZE(fan_attributes)-2] =
