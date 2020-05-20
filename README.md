@@ -11,6 +11,7 @@ Based on patches found in discussion: https://github.com/vmatare/thinkfan/issues
 - Thinkpad P70 (N1D)
 - Thinkpad P71 (N1T)
 - Thinkpad P72 (N2C)
+- Thinkpad P73 (N2N)
 - Thinkpad P1 1st gen (N2E)
 - Thinkpad X1 Extreme 1st gen (N2E)
 - Thinkpad P1 2nd gen (N2O)
